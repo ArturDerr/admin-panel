@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
+import bgVideo from '/92b7a606e03403045d13c7681c248c3c.mp4'
 import {
   Box,
   Button,
@@ -129,7 +130,7 @@ export default function LoginPage() {
             objectFit: "cover",
           }}
         >
-          <source src="92b7a606e03403045d13c7681c248c3c.mp4" type="video/mp4" />
+          <source src={bgVideo} type="video/mp4" />
           Ваш браузер не поддерживает видео.
         </video>
       <Card
