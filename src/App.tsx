@@ -29,11 +29,11 @@ function PublicOnlyRoute() {
 function App() {
   return (
     <Routes>
-      <Route element={<PublicOnlyRoute />}>
+      {/* <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
-      </Route>
-
-      <Route element={<ProtectedRoute />}>
+      </Route> */}
+      {/* PublicOnlyRoute поменять на PublicOnlyRoute */}
+      <Route element={<PublicOnlyRoute />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="products" replace />} />
           <Route path="products" element={<ProductsPage />} />
