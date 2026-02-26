@@ -10,7 +10,7 @@
 ### Products
 - `GET /admin/products`
 - `GET /admin/products/{id}`
-- `POST /admin/products`
+- `POST /admin/products` - Supports FormData for file uploads (images)
 - `DELETE /admin/products/{id}`
 
 ### Users

@@ -35,6 +35,8 @@ type UserRow = User & { id: string };
 type CreateUserForm = {
   phone: string;
   fullname: string;
+  address: string;
+  addressCoordinates: string;
 };
 
 function formatDate(iso: string): string {
@@ -74,6 +76,8 @@ export default function UsersPage() {
   const [createForm, setCreateForm] = useState<CreateUserForm>({
     phone: "",
     fullname: "",
+    address: "",
+    addressCoordinates: "",
   });
   const [creating, setCreating] = useState(false);
 
@@ -152,12 +156,16 @@ export default function UsersPage() {
     setCreateForm({
       phone: "",
       fullname: "",
+      address: "",
+      addressCoordinates: "",
     });
   }
 
   async function handleCreateUser() {
     const phone = createForm.phone.trim();
     const fullname = createForm.fullname.trim();
+    const address = createForm.address.trim();
+    const addressCoordinates = createForm.addressCoordinates.trim();
 
     if (!phone || !fullname) {
       toast({
@@ -178,7 +186,8 @@ export default function UsersPage() {
         fullname,
         createdAt: new Date().toISOString(),
         isOnline: false,
-        address: "Не указан",
+        address: address || "Не указан",
+        addressCoordinates: addressCoordinates || "",
         avatarUrl: "https://i.pravatar.cc/150?img=1",
         rating: 0,
         rentalSpentTotal: 0,
@@ -386,6 +395,46 @@ export default function UsersPage() {
                     }))
                   }
                   placeholder="ФИО"
+                  bg="#ffffff"
+                  borderColor="#d9dde3"
+                  _focus={{
+                    borderColor: "#7ed957",
+                    boxShadow: "0 0 0 1px #7ed957",
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color="#98a1ac">Адрес</FormLabel>
+                <Input
+                  value={createForm.address}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      address: e.target.value,
+                    }))
+                  }
+                  placeholder="Улица, дом, квартира"
+                  bg="#ffffff"
+                  borderColor="#d9dde3"
+                  _focus={{
+                    borderColor: "#7ed957",
+                    boxShadow: "0 0 0 1px #7ed957",
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel color="#98a1ac">Координаты адреса</FormLabel>
+                <Input
+                  value={createForm.addressCoordinates}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      addressCoordinates: e.target.value,
+                    }))
+                  }
+                  placeholder="Широта, Долгота (например, 51.1694, 71.4491)"
                   bg="#ffffff"
                   borderColor="#d9dde3"
                   _focus={{

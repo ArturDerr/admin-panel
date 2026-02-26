@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import React from "react";
 import {
   Badge,
   Box,
@@ -54,13 +55,34 @@ type NewProductForm = {
   extensionAvailable: boolean;
   insuranceIncluded: boolean;
   freeCancellation: boolean;
-  image1: string;
-  image2: string;
-  image3: string;
-  image4: string;
-  addonCategory: string;
-  addonTitle: string;
-  addonPrice: string;
+  image1: string | File;
+  image2: string | File;
+  image3: string | File;
+  image4: string | File;
+  addonCategory1: string;
+  addonTitle1: string;
+  addonPrice1: string;
+  addonCategory2: string;
+  addonTitle2: string;
+  addonPrice2: string;
+  addonCategory3: string;
+  addonTitle3: string;
+  addonPrice3: string;
+  addonCategory4: string;
+  addonTitle4: string;
+  addonPrice4: string;
+  addonCategory5: string;
+  addonTitle5: string;
+  addonPrice5: string;
+  addonCategory6: string;
+  addonTitle6: string;
+  addonPrice6: string;
+  addonCategory7: string;
+  addonTitle7: string;
+  addonPrice7: string;
+  addonCategory8: string;
+  addonTitle8: string;
+  addonPrice8: string;
 };
 
 function BoolBadge({ value }: { value: boolean }) {
@@ -88,6 +110,11 @@ function toNumber(value: string): number {
   return parsed;
 }
 
+function getFormValue(form: NewProductForm, key: keyof NewProductForm): string {
+  const value = form[key];
+  return typeof value === "string" ? value : "";
+}
+
 function getInitialForm(): NewProductForm {
   return {
     ownerPhone: "",
@@ -112,9 +139,30 @@ function getInitialForm(): NewProductForm {
     image2: "",
     image3: "",
     image4: "",
-    addonCategory: "",
-    addonTitle: "",
-    addonPrice: "",
+    addonCategory1: "",
+    addonTitle1: "",
+    addonPrice1: "",
+    addonCategory2: "",
+    addonTitle2: "",
+    addonPrice2: "",
+    addonCategory3: "",
+    addonTitle3: "",
+    addonPrice3: "",
+    addonCategory4: "",
+    addonTitle4: "",
+    addonPrice4: "",
+    addonCategory5: "",
+    addonTitle5: "",
+    addonPrice5: "",
+    addonCategory6: "",
+    addonTitle6: "",
+    addonPrice6: "",
+    addonCategory7: "",
+    addonTitle7: "",
+    addonPrice7: "",
+    addonCategory8: "",
+    addonTitle8: "",
+    addonPrice8: "",
   };
 }
 
@@ -203,19 +251,31 @@ export default function ProductsPage() {
 
   const createdPayload = useMemo(() => {
     const images = [form.image1, form.image2, form.image3, form.image4]
-      .map((v) => v.trim())
+      .map((v) => (typeof v === "string" ? v.trim() : ""))
       .filter(Boolean);
 
-    const addons: ProductAddon[] =
-      form.addonTitle.trim() || form.addonCategory.trim()
-        ? [
-            {
-              addonCategory: form.addonCategory.trim() || "Другое",
-              addonTitle: form.addonTitle.trim() || "Дополнение",
-              addonPrice: toNumber(form.addonPrice),
-            },
-          ]
-        : [];
+    const addons: ProductAddon[] = [];
+    for (let i = 1; i <= 8; i++) {
+      const category = getFormValue(
+        form,
+        `addonCategory${i}` as keyof NewProductForm,
+      ).trim();
+      const title = getFormValue(
+        form,
+        `addonTitle${i}` as keyof NewProductForm,
+      ).trim();
+      const price = toNumber(
+        getFormValue(form, `addonPrice${i}` as keyof NewProductForm),
+      );
+
+      if (category || title || price > 0) {
+        addons.push({
+          addonCategory: category || "Другое",
+          addonTitle: title || "Дополнение",
+          addonPrice: price,
+        });
+      }
+    }
 
     return {
       ownerPhone: form.ownerPhone.trim(),
@@ -239,10 +299,7 @@ export default function ProductsPage() {
       productImages: images.length
         ? images
         : [
-            "https://picsum.photos/seed/new1/600/400",
-            "https://picsum.photos/seed/new2/600/400",
-            "https://picsum.photos/seed/new3/600/400",
-            "https://picsum.photos/seed/new4/600/400",
+            'null'
           ],
       addons,
     };
@@ -268,7 +325,19 @@ export default function ProductsPage() {
 
     try {
       setIsCreating(true);
-      const created = await createProduct(createdPayload);
+
+      const formData = new FormData();
+
+      formData.append("productData", JSON.stringify(createdPayload));
+
+      const imageFields = [form.image1, form.image2, form.image3, form.image4];
+      imageFields.forEach((image, index) => {
+        if (image instanceof File) {
+          formData.append(`image${index + 1}`, image);
+        }
+      });
+
+      const created = await createProduct(formData);
 
       setItems((prev) => [
         {
@@ -649,6 +718,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">owner_phone</FormLabel>
                     <Input
                       value={form.ownerPhone}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("ownerPhone", e.target.value)
                       }
@@ -660,6 +730,7 @@ export default function ProductsPage() {
                   <FormControl isRequired>
                     <FormLabel color="#98a1ac">category</FormLabel>
                     <Input
+                      rounded="none"
                       value={form.category}
                       onChange={(e) => onChangeForm("category", e.target.value)}
                       placeholder="Категория"
@@ -671,6 +742,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">title</FormLabel>
                     <Input
                       value={form.title}
+                      rounded="none"
                       onChange={(e) => onChangeForm("title", e.target.value)}
                       placeholder="Название"
                       bg="#ffffff"
@@ -681,6 +753,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">owner_address</FormLabel>
                     <Input
                       value={form.ownerAddress}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("ownerAddress", e.target.value)
                       }
@@ -693,6 +766,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">brand</FormLabel>
                     <Input
                       value={form.brand}
+                      rounded="none"
                       onChange={(e) => onChangeForm("brand", e.target.value)}
                       placeholder="Бренд"
                       bg="#ffffff"
@@ -703,6 +777,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">condition</FormLabel>
                     <Input
                       value={form.condition}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("condition", e.target.value)
                       }
@@ -717,6 +792,7 @@ export default function ProductsPage() {
                   <FormLabel color="#98a1ac">Описание</FormLabel>
                   <Textarea
                     value={form.description}
+                    rounded="none"
                     onChange={(e) =>
                       onChangeForm("description", e.target.value)
                     }
@@ -734,6 +810,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Мин. период</FormLabel>
                     <Input
                       value={form.minRentalPeriod}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("minRentalPeriod", e.target.value)
                       }
@@ -746,6 +823,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Макс. период</FormLabel>
                     <Input
                       value={form.maxRentalPeriod}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("maxRentalPeriod", e.target.value)
                       }
@@ -758,6 +836,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Цена/час</FormLabel>
                     <Input
                       value={form.pricePerHour}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("pricePerHour", e.target.value)
                       }
@@ -770,6 +849,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Цена/день</FormLabel>
                     <Input
                       value={form.pricePerDay}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("pricePerDay", e.target.value)
                       }
@@ -782,6 +862,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Цена/неделя</FormLabel>
                     <Input
                       value={form.pricePerWeek}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("pricePerWeek", e.target.value)
                       }
@@ -794,6 +875,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Цена/месяц</FormLabel>
                     <Input
                       value={form.pricePerMonth}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("pricePerMonth", e.target.value)
                       }
@@ -806,6 +888,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Залог</FormLabel>
                     <Input
                       value={form.deposit}
+                      rounded="none"
                       onChange={(e) => onChangeForm("deposit", e.target.value)}
                       placeholder="0"
                       bg="#ffffff"
@@ -816,6 +899,7 @@ export default function ProductsPage() {
                     <FormLabel color="#98a1ac">Стоимость товара</FormLabel>
                     <Input
                       value={form.productCost}
+                      rounded="none"
                       onChange={(e) =>
                         onChangeForm("productCost", e.target.value)
                       }
@@ -826,93 +910,231 @@ export default function ProductsPage() {
                   </FormControl>
                 </Grid>
 
-                <Grid
-                  templateColumns={{ base: "1fr", md: "1fr 1fr 1fr 1fr" }}
-                  gap={4}
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
                 >
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Image 1 URL</FormLabel>
-                    <Input
-                      value={form.image1}
-                      onChange={(e) => onChangeForm("image1", e.target.value)}
-                      placeholder="https://..."
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Image 2 URL</FormLabel>
-                    <Input
-                      value={form.image2}
-                      onChange={(e) => onChangeForm("image2", e.target.value)}
-                      placeholder="https://..."
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Image 3 URL</FormLabel>
-                    <Input
-                      value={form.image3}
-                      onChange={(e) => onChangeForm("image3", e.target.value)}
-                      placeholder="https://..."
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Image 4 URL</FormLabel>
-                    <Input
-                      value={form.image4}
-                      onChange={(e) => onChangeForm("image4", e.target.value)}
-                      placeholder="https://..."
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                </Grid>
+                  <Text fontWeight="700" mb={3}>
+                    Фото товара
+                  </Text>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "1fr 1fr 1fr 1fr" }}
+                    gap={4}
+                  >
+                    <FormControl>
+                      <FormLabel color="#98a1ac">Фото 1</FormLabel>
+                      <Input
+                        type="file"
+                        rounded="none"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            onChangeForm("image1", file);
+                          }
+                        }}
+                        bg="#ffffff"
+                        borderColor="#d9dde3"
+                        pt={1}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color="#98a1ac">Фото 2</FormLabel>
+                      <Input
+                        type="file"
+                        rounded="none"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            onChangeForm("image2", file);
+                          }
+                        }}
+                        bg="#ffffff"
+                        borderColor="#d9dde3"
+                        pt={1}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color="#98a1ac">Фото 3</FormLabel>
+                      <Input
+                        type="file"
+                        rounded="none"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            onChangeForm("image3", file);
+                          }
+                        }}
+                        bg="#ffffff"
+                        borderColor="#d9dde3"
+                        pt={1}
+                      />
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel color="#98a1ac">Фото 4</FormLabel>
+                      <Input
+                        type="file"
+                        rounded="none"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            onChangeForm("image4", file);
+                          }
+                        }}
+                        bg="#ffffff"
+                        borderColor="#d9dde3"
+                        pt={1}
+                      />
+                    </FormControl>
+                  </Grid>
+                </Box>
 
-                <Grid
-                  templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }}
-                  gap={4}
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
                 >
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Addon category</FormLabel>
-                    <Input
-                      value={form.addonCategory}
-                      onChange={(e) =>
-                        onChangeForm("addonCategory", e.target.value)
-                      }
-                      placeholder="Аксессуары"
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Addon title</FormLabel>
-                    <Input
-                      value={form.addonTitle}
-                      onChange={(e) =>
-                        onChangeForm("addonTitle", e.target.value)
-                      }
-                      placeholder="Штатив"
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel color="#98a1ac">Addon price</FormLabel>
-                    <Input
-                      value={form.addonPrice}
-                      onChange={(e) =>
-                        onChangeForm("addonPrice", e.target.value)
-                      }
-                      placeholder="0"
-                      bg="#ffffff"
-                      borderColor="#d9dde3"
-                    />
-                  </FormControl>
-                </Grid>
+                  <Text fontWeight="700" mb={3}>
+                    Дополнения
+                  </Text>
+                  <Text color="#98a1ac" fontSize="sm" mb={4}>
+                    Категория 1: Аксессуары
+                  </Text>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }}
+                    gap={3}
+                  >
+                    {Array.from({ length: 4 }).map((_, i) => {
+                      const index = i + 1;
+                      const titleKey =
+                        `addonTitle${index}` as keyof NewProductForm;
+                      const priceKey =
+                        `addonPrice${index}` as keyof NewProductForm;
+                      const categoryKey =
+                        `addonCategory${index}` as keyof NewProductForm;
+                      return (
+                        <React.Fragment key={`addon1-${index}`}>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">
+                              Название {index}
+                            </FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, titleKey)}
+                              onChange={(e) =>
+                                onChangeForm(titleKey, e.target.value)
+                              }
+                              placeholder="Штатив"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">Цена {index}</FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, priceKey)}
+                              onChange={(e) =>
+                                onChangeForm(priceKey, e.target.value)
+                              }
+                              placeholder="0"
+                              type="number"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">
+                              Категория {index}
+                            </FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, categoryKey)}
+                              onChange={(e) =>
+                                onChangeForm(categoryKey, e.target.value)
+                              }
+                              placeholder="Аксессуары"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                        </React.Fragment>
+                      );
+                    })}
+                  </Grid>
+
+                  <Text color="#98a1ac" fontSize="sm" mt={6} mb={4}>
+                    Категория 2: Дополнительные услуги
+                  </Text>
+                  <Grid
+                    templateColumns={{ base: "1fr", md: "1fr 1fr 1fr" }}
+                    gap={3}
+                  >
+                    {Array.from({ length: 4 }).map((_, i) => {
+                      const index = i + 5;
+                      const titleKey =
+                        `addonTitle${index}` as keyof NewProductForm;
+                      const priceKey =
+                        `addonPrice${index}` as keyof NewProductForm;
+                      const categoryKey =
+                        `addonCategory${index}` as keyof NewProductForm;
+                      return (
+                        <React.Fragment key={`addon2-${index}`}>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">
+                              Название {index - 4}
+                            </FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, titleKey)}
+                              onChange={(e) =>
+                                onChangeForm(titleKey, e.target.value)
+                              }
+                              placeholder="Доставка"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">
+                              Цена {index - 4}
+                            </FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, priceKey)}
+                              onChange={(e) =>
+                                onChangeForm(priceKey, e.target.value)
+                              }
+                              placeholder="0"
+                              type="number"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel color="#98a1ac">
+                              Категория {index - 4}
+                            </FormLabel>
+                            <Input
+                              rounded="none"
+                              value={getFormValue(form, categoryKey)}
+                              onChange={(e) =>
+                                onChangeForm(categoryKey, e.target.value)
+                              }
+                              placeholder="Дополнительные услуги"
+                              bg="#ffffff"
+                              borderColor="#d9dde3"
+                            />
+                          </FormControl>
+                        </React.Fragment>
+                      );
+                    })}
+                  </Grid>
+                </Box>
 
                 <HStack spacing={6} pt={2}>
                   <Checkbox
@@ -942,7 +1164,11 @@ export default function ProductsPage() {
                 </HStack>
 
                 <HStack justify="flex-end" pt={2}>
-                  <Button rounded="none" variant="outline" onClick={createModal.onClose}>
+                  <Button
+                    rounded="none"
+                    variant="outline"
+                    onClick={createModal.onClose}
+                  >
                     Отмена
                   </Button>
                   <Button

@@ -167,7 +167,7 @@ export async function cancelOrder(id: string): Promise<OrderDetails> {
 }
 
 export async function createProduct(
-  payload: Omit<ProductDetails, "id"> & { id?: string },
+  payload: (Omit<ProductDetails, "id"> & { id?: string }) | FormData,
 ): Promise<ProductDetails> {
   return apiClient.post<ProductDetails>("/admin/products", payload);
 }
@@ -190,4 +190,10 @@ export async function toggleUserBan(phone: string): Promise<UserDetails> {
   return apiClient.patch<UserDetails>(
     `/admin/users/${encodeURIComponent(phone)}/ban`,
   );
+}
+
+export async function createCoupon(
+  payload: Omit<Coupon, "id"> & { id?: string },
+): Promise<Coupon> {
+  return apiClient.post<Coupon>("/admin/coupons", payload);
 }

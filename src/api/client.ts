@@ -118,9 +118,15 @@ async function request<T>(
   const url = buildUrl(options.baseUrl, path);
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...requestOptions.headers,
   };
+
+  if (
+    !requestOptions.headers?.["Content-Type"] &&
+    !(requestOptions.body instanceof FormData)
+  ) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const accessToken = getAccessToken();
   if (accessToken && !requestOptions.skipAuth) {
@@ -133,7 +139,9 @@ async function request<T>(
     headers,
     body:
       requestOptions.body !== undefined
-        ? JSON.stringify(requestOptions.body)
+        ? requestOptions.body instanceof FormData
+          ? requestOptions.body
+          : JSON.stringify(requestOptions.body)
         : undefined,
     signal: requestOptions.signal,
   });
@@ -158,7 +166,9 @@ async function request<T>(
     headers: retryHeaders,
     body:
       requestOptions.body !== undefined
-        ? JSON.stringify(requestOptions.body)
+        ? requestOptions.body instanceof FormData
+          ? requestOptions.body
+          : JSON.stringify(requestOptions.body)
         : undefined,
     signal: requestOptions.signal,
   });
