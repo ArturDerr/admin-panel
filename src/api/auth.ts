@@ -8,14 +8,13 @@ import {
   LS_PHONE_KEY,
 } from "./tokenStore";
 import { createLogger } from "../utils/logger";
+import { apiClient } from "./client";
 
 const logger = createLogger("Auth");
 
 const API_BASE_URL =
   (import.meta.env?.VITE_API_BASE_URL as string | undefined) ??
   "https://f-rent-develop.ru/api/v1";
-
-const API_KEY = "IceOne";
 
 let currentUserPhone: string | null = (() => {
   try {
@@ -49,14 +48,9 @@ async function requestJson<T>(path: string, options: RequestInit): Promise<T> {
   const url = buildUrl(path);
   logger.debug(`${options.method ?? "GET"} ${url}`);
 
-  const headers = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "X-API-KEY": API_KEY,
-    ...options.headers,
   };
-
-  console.log("Sending headers:", headers);
-  console.log("Sending body:", options.body);
 
   const response = await fetch(url, {
     credentials: "include",
@@ -109,7 +103,8 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
   currentUserPhone = response.userPhone ?? payload.phone;
   try {
     localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
-  } catch {}
+  } catch {
+  }
 
   logger.info(`Login success: userPhone=${currentUserPhone}`);
 
@@ -143,7 +138,8 @@ export function saveAuth(data: AuthResponse): void {
     currentUserPhone = data.userPhone;
     try {
       localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
-    } catch {}
+    } catch {
+    }
   }
 }
 
@@ -179,9 +175,9 @@ type AdminCreatePayload = {
 };
 
 export async function createAdmin(payload: AdminCreatePayload): Promise<void> {
-  await requestJson<{ ok?: boolean }>("/admin/auth/create", {
-    method: "POST",
-    body: JSON.stringify({ ...payload, role: "admin" }),
+  await apiClient.post<{ ok?: boolean }>("/admin/auth/create", {
+    ...payload,
+    role: "admin",
   });
 }
 

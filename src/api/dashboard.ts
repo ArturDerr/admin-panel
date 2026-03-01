@@ -176,24 +176,49 @@ export async function deleteProduct(id: string): Promise<void> {
   await apiClient.delete<void>(`/admin/products/${encodeURIComponent(id)}`);
 }
 
+type UserCreateRequest = {
+  phone: string;
+  fullname: string;
+};
+
 export async function createUser(
-  payload: Omit<UserDetails, "phone"> & { phone: string },
+  payload: UserCreateRequest,
 ): Promise<UserDetails> {
-  return apiClient.post<UserDetails>("/admin/users", payload);
+  return apiClient.post<UserDetails>("/admin/users", {
+    phone: payload.phone,
+    fullname: payload.fullname,
+  });
 }
 
 export async function deleteUser(phone: string): Promise<void> {
   await apiClient.delete<void>(`/admin/users/${encodeURIComponent(phone)}`);
 }
 
-export async function toggleUserBan(phone: string): Promise<UserDetails> {
+export async function toggleUserBan(
+  phone: string,
+  action: "ban" | "unban" = "ban",
+): Promise<UserDetails> {
   return apiClient.patch<UserDetails>(
     `/admin/users/${encodeURIComponent(phone)}/ban`,
+    {
+      reason: "Нарушение правил",
+      action,
+    },
   );
 }
 
+type CouponCreateRequest = {
+  code: string;
+  discountPercent?: number;
+  priceFrom?: number;
+  priceUpTo?: number;
+  discountUpTo?: string | null;
+  categoryOfProduct?: string;
+  couponForUser?: string;
+};
+
 export async function createCoupon(
-  payload: Omit<Coupon, "id"> & { id?: string },
+  payload: CouponCreateRequest,
 ): Promise<Coupon> {
   return apiClient.post<Coupon>("/admin/coupons", payload);
 }

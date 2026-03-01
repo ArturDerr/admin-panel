@@ -164,8 +164,6 @@ export default function UsersPage() {
   async function handleCreateUser() {
     const phone = createForm.phone.trim();
     const fullname = createForm.fullname.trim();
-    const address = createForm.address.trim();
-    const addressCoordinates = createForm.addressCoordinates.trim();
 
     if (!phone || !fullname) {
       toast({
@@ -184,15 +182,6 @@ export default function UsersPage() {
       await createUser({
         phone,
         fullname,
-        createdAt: new Date().toISOString(),
-        isOnline: false,
-        address: address || "Не указан",
-        addressCoordinates: addressCoordinates || "",
-        avatarUrl: "https://i.pravatar.cc/150?img=1",
-        rating: 0,
-        rentalSpentTotal: 0,
-        rentalIncomeTotal: 0,
-        isBanned: false,
       });
 
       setItems((prev) => [{ id: phone, phone, fullname }, ...prev]);

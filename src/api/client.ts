@@ -1,4 +1,9 @@
-import { clearTokens, getAccessToken, setAccessToken } from "./tokenStore";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+} from "./tokenStore";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -79,10 +84,12 @@ async function refreshAccessToken(
   if (!refreshPromise) {
     refreshPromise = (async () => {
       const refreshUrl = buildUrl(options.baseUrl, "/auth/refresh");
+      const storedRefreshToken = getRefreshToken();
       const response = await fetch(refreshUrl, {
         method: "POST",
         credentials: options.credentials,
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: storedRefreshToken ?? "" }),
       });
 
       if (!response.ok) {

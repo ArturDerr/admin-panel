@@ -13,6 +13,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Spinner,
   Text,
   VStack,
   useDisclosure,
@@ -94,7 +95,6 @@ export default function CouponsPage() {
       const created = await createCoupon({
         code,
         discountPercent,
-        isActive: newCoupon.isActive,
       });
 
       setItems((prev) => [created, ...prev]);
@@ -125,17 +125,19 @@ export default function CouponsPage() {
 
   return (
     <Box>
-      <HStack mb={4} justify="space-between">
+      <HStack justify="space-between" mb={4}>
         <Text fontSize="xl" fontWeight="700">
           Купоны
         </Text>
         <Button
           colorScheme="blue"
           rounded="none"
+          size="sm"
           onClick={createModal.onOpen}
         >
           Создать купон
         </Button>
+        {isLoading && <Spinner size="sm" color="#2f80ed" />}
       </HStack>
 
       <SimpleSectionTable<Coupon>
@@ -183,10 +185,10 @@ export default function CouponsPage() {
                 <FormLabel color="#98a1ac">Код купона</FormLabel>
                 <Input
                   value={newCoupon.code}
-                  rounded="none"
                   onChange={(e) => handleChange("code", e.target.value)}
-                  placeholder="Введите код купона"
+                  placeholder="Введите название купона"
                   bg="#ffffff"
+                  rounded="none"
                   borderColor="#d9dde3"
                 />
               </FormControl>
