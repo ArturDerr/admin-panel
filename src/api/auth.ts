@@ -1,8 +1,3 @@
-/**
- * Auth API module.
- * Handles login/logout and JWT token lifecycle.
- * Tokens are persisted via tokenStore (localStorage).
- */
 import type { LoginPayload, AuthResponse } from "../types";
 import { getJwtPayload, isTokenValid } from "./jwt";
 import {
@@ -20,7 +15,8 @@ const API_BASE_URL =
   (import.meta.env?.VITE_API_BASE_URL as string | undefined) ??
   "https://f-rent-develop.ru/api/v1";
 
-// Initialize phone from localStorage so it survives page reload
+const API_KEY = "IceOne";
+
 let currentUserPhone: string | null = (() => {
   try {
     return localStorage.getItem(LS_PHONE_KEY);
@@ -55,11 +51,12 @@ async function requestJson<T>(path: string, options: RequestInit): Promise<T> {
 
   const headers = {
     "Content-Type": "application/json",
-    "X-API-Token": "IceOne",
+    "X-API-KEY": API_KEY,
+    ...options.headers,
   };
 
-  console.log("Sending headers:", headers);  
-  console.log("Sending body:", options.body);  
+  console.log("Sending headers:", headers);
+  console.log("Sending body:", options.body);
 
   const response = await fetch(url, {
     credentials: "include",
@@ -80,7 +77,9 @@ async function requestJson<T>(path: string, options: RequestInit): Promise<T> {
       errPayload?.message ??
       errPayload?.detail ??
       `Request failed with status ${response.status}`;
-    logger.error(`${options.method ?? "GET"} ${path} → ${response.status}: ${message}`);
+    logger.error(
+      `${options.method ?? "GET"} ${path} → ${response.status}: ${message}`,
+    );
     throw new Error(message);
   }
 
@@ -95,13 +94,8 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
   logger.info(`Login attempt: phone=${payload.phone.slice(0, 4)}***`);
 
-  const apiToken = "IceOne";
-
   const response = await requestJson<AuthApiResponse>("/auth/login", {
     method: "POST",
-    headers: {
-    "X-API-Token": apiToken,
-  },
     body: JSON.stringify(payload),
   });
 
@@ -110,15 +104,12 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     throw new Error("Не удалось получить access token");
   }
 
-  // Persist both tokens
   setTokens(response.accessToken, response.refreshToken ?? null);
 
   currentUserPhone = response.userPhone ?? payload.phone;
   try {
     localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
-  } catch {
-    // localStorage not available
-  }
+  } catch {}
 
   logger.info(`Login success: userPhone=${currentUserPhone}`);
 
@@ -152,13 +143,10 @@ export function saveAuth(data: AuthResponse): void {
     currentUserPhone = data.userPhone;
     try {
       localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 }
 
-/** Returns the stored refresh token (from localStorage-persisted tokenStore) */
 export function getRefreshToken(): string | null {
   return getRefreshTokenFromStore();
 }
@@ -183,5 +171,18 @@ export function parseJwtPayload(token: string): Record<string, unknown> | null {
   return payload ? (payload as Record<string, unknown>) : null;
 }
 
-export { getAccessToken };
+type AdminCreatePayload = {
+  phone: string;
+  fullname: string;
+  password: string;
+  role?: "admin";
+};
 
+export async function createAdmin(payload: AdminCreatePayload): Promise<void> {
+  await requestJson<{ ok?: boolean }>("/admin/auth/create", {
+    method: "POST",
+    body: JSON.stringify({ ...payload, role: "admin" }),
+  });
+}
+
+export { getAccessToken };

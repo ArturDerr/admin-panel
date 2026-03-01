@@ -13,7 +13,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Spinner,
   Text,
   VStack,
   useDisclosure,

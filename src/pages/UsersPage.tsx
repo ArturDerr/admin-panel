@@ -46,7 +46,7 @@ function formatDate(iso: string): string {
 }
 
 function formatMoney(value: number): string {
-  return `${value.toLocaleString("ru-RU")} ₸`;
+  return `${value.toLocaleString("ru-RU")} ₽`;
 }
 
 export default function UsersPage() {

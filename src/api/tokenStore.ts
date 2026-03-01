@@ -1,3 +1,5 @@
+export const LS_PHONE_KEY = "admin_phone";
+
 type TokenPair = {
   accessToken: string | null;
   refreshToken: string | null;

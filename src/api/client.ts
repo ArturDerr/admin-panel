@@ -36,7 +36,7 @@ export class ApiError extends Error {
 
 const DEFAULT_BASE_URL =
   (import.meta.env?.VITE_API_BASE_URL as string | undefined) ??
-  "https://api.example.com";
+  "https://f-rent-develop.ru/api/v1";
 
 const defaultOptions: Required<ApiClientOptions> = {
   baseUrl: DEFAULT_BASE_URL,

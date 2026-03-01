@@ -9,11 +9,21 @@ import {
   DrawerContent,
   DrawerOverlay,
   Flex,
+  FormControl,
+  FormLabel,
   HStack,
   IconButton,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  ModalOverlay,
   Text,
   VStack,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import {
   Ban,
@@ -26,12 +36,13 @@ import {
   Package,
   ShieldCheck,
   Star,
+  UserPlus,
   Users,
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import type { MenuKey } from "../types";
-import { logout } from "../api/auth";
+import { createAdmin, logout } from "../api/auth";
 
 type NavItem = {
   key: MenuKey;
@@ -174,14 +185,75 @@ function SidebarContent({
   );
 }
 
+type AdminCreateForm = {
+  phone: string;
+  fullname: string;
+  password: string;
+};
+
 export default function DashboardLayout() {
+  const toast = useToast();
   const [collapsed, setCollapsed] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isAdminOpen,
+    onOpen: openAdminModal,
+    onClose: closeAdminModal,
+  } = useDisclosure();
   const navigate = useNavigate();
+
+  const [adminForm, setAdminForm] = useState<AdminCreateForm>({
+    phone: "",
+    fullname: "",
+    password: "",
+  });
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
+  };
+
+  const handleCreateAdmin = async () => {
+    const phone = adminForm.phone.trim();
+    const fullname = adminForm.fullname.trim();
+    const password = adminForm.password.trim();
+
+    if (!phone || !fullname || !password) {
+      toast({
+        title: "Заполните поля",
+        description: "Телефон, имя и пароль обязательны",
+        status: "warning",
+        duration: 2200,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      setCreatingAdmin(true);
+      await createAdmin({ phone, fullname, password, role: "admin" });
+      toast({
+        title: "Администратор создан",
+        status: "success",
+        duration: 2200,
+        isClosable: true,
+      });
+      closeAdminModal();
+      setAdminForm({ phone: "", fullname: "", password: "" });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Не удалось создать админа";
+      toast({
+        title: "Ошибка",
+        description: message,
+        status: "error",
+        duration: 2600,
+        isClosable: true,
+      });
+    } finally {
+      setCreatingAdmin(false);
+    }
   };
 
   return (
@@ -236,7 +308,118 @@ export default function DashboardLayout() {
               variant="ghost"
             />
           </HStack>
+
+          <HStack spacing={2}>
+            <IconButton
+              rounded="none"
+              aria-label="Создать администратора"
+              icon={<UserPlus size={18} />}
+              onClick={openAdminModal}
+              size="sm"
+              variant="ghost"
+            />
+          </HStack>
         </HStack>
+
+        <Modal isOpen={isAdminOpen} onClose={closeAdminModal} isCentered>
+          <ModalOverlay bg="blackAlpha.300" />
+          <ModalContent
+            bg="#ffffff"
+            border="1px solid"
+            borderColor="#d9dde3"
+            color="#2b2f36"
+            borderRadius="none"
+          >
+            <ModalHeader>Создать администратора</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <VStack spacing={4} align="stretch">
+                <FormControl isRequired>
+                  <FormLabel color="#98a1ac">Телефон</FormLabel>
+                  <Input
+                    rounded="none"
+                    value={adminForm.phone}
+                    onChange={(e) =>
+                      setAdminForm((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                    placeholder="Введите номер"
+                    bg="#ffffff"
+                    borderColor="#d9dde3"
+                    _focus={{
+                      borderColor: "#2f80ed",
+                      boxShadow: "0 0 0 1px #2f80ed",
+                    }}
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel color="#98a1ac">ФИО</FormLabel>
+                  <Input
+                    rounded="none"
+                    value={adminForm.fullname}
+                    onChange={(e) =>
+                      setAdminForm((prev) => ({
+                        ...prev,
+                        fullname: e.target.value,
+                      }))
+                    }
+                    placeholder="ФИО"
+                    bg="#ffffff"
+                    borderColor="#d9dde3"
+                    _focus={{
+                      borderColor: "#2f80ed",
+                      boxShadow: "0 0 0 1px #2f80ed",
+                    }}
+                  />
+                </FormControl>
+
+                <FormControl isRequired>
+                  <FormLabel color="#98a1ac">Пароль</FormLabel>
+                  <Input
+                    rounded="none"
+                    type="password"
+                    value={adminForm.password}
+                    onChange={(e) =>
+                      setAdminForm((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                    placeholder="Пароль"
+                    bg="#ffffff"
+                    borderColor="#d9dde3"
+                    _focus={{
+                      borderColor: "#2f80ed",
+                      boxShadow: "0 0 0 1px #2f80ed",
+                    }}
+                  />
+                </FormControl>
+
+                <HStack justify="flex-end">
+                  <Button
+                    variant="outline"
+                    rounded="none"
+                    colorScheme="gray"
+                    onClick={closeAdminModal}
+                  >
+                    Отмена
+                  </Button>
+                  <Button
+                    colorScheme="blue"
+                    rounded="none"
+                    onClick={handleCreateAdmin}
+                    isLoading={creatingAdmin}
+                  >
+                    Создать
+                  </Button>
+                </HStack>
+              </VStack>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
 
         <Box p={{ base: 3, md: 5 }} overflowX="auto" flex={1}>
           <Box

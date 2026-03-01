@@ -97,7 +97,7 @@ function PriceRow({ label, value }: { label: string; value: number }) {
   return (
     <HStack justify="space-between" w="full">
       <Text color="#98a1ac">{label}</Text>
-      <Text fontWeight="600">{value.toLocaleString("ru-RU")} ₸</Text>
+      <Text fontWeight="600">{value.toLocaleString("ru-RU")} ₽</Text>
     </HStack>
   );
 }
@@ -472,7 +472,7 @@ export default function ProductsPage() {
           <ModalBody pb={6}>
             {loadingDetails || !selectedProduct ? (
               <HStack py={8} spacing={3}>
-                <Spinner color="#7ed957" />
+                <Spinner color="#2f80ed" />
                 <Text color="#98a1ac">Загрузка информации...</Text>
               </HStack>
             ) : (
@@ -667,7 +667,7 @@ export default function ProductsPage() {
                                   Доп. стоимость
                                 </Text>
                                 <Text fontSize="sm" fontWeight="600">
-                                  {addon.addonPrice.toLocaleString("ru-RU")} ₸
+                                  {addon.addonPrice.toLocaleString("ru-RU")} ₽
                                 </Text>
                               </HStack>
                             </Box>

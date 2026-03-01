@@ -29,7 +29,7 @@ function formatDate(value: string): string {
 }
 
 function formatMoney(value: number): string {
-  return `${value.toLocaleString("ru-RU")} ₸`;
+  return `${value.toLocaleString("ru-RU")} ₽`;
 }
 
 function getStatusColor(status: OrderDetails["status"]): string {
