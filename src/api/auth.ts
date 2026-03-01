@@ -95,13 +95,8 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
   logger.info(`Login attempt: phone=${payload.phone.slice(0, 4)}***`);
 
-  const apiToken = "IceOne";
-
-  const response = await requestJson<AuthApiResponse>("/auth/login", {
+  const response = await requestJson<AuthApiResponse>("/auth/login_admin", {
     method: "POST",
-    headers: {
-    "X-API-Token": apiToken,
-  },
     body: JSON.stringify(payload),
   });
 
