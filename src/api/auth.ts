@@ -1,23 +1,45 @@
+/**
+ * Auth API module.
+ * Handles login/logout and JWT token lifecycle.
+ * Tokens are persisted via tokenStore (localStorage).
+ */
 import type { LoginPayload, AuthResponse } from "../types";
 import { getJwtPayload, isTokenValid } from "./jwt";
-import { clearTokens, getAccessToken, setAccessToken } from "./tokenStore";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken as getRefreshTokenFromStore,
+  setTokens,
+  LS_PHONE_KEY,
+} from "./tokenStore";
+import { createLogger } from "../utils/logger";
+
+const logger = createLogger("Auth");
 
 const API_BASE_URL =
   (import.meta.env?.VITE_API_BASE_URL as string | undefined) ??
-  "https://api.example.com";
+  "https://f-rent-develop.ru/api/v1";
 
-let currentUserPhone: string | null = null;
+// Initialize phone from localStorage so it survives page reload
+let currentUserPhone: string | null = (() => {
+  try {
+    return localStorage.getItem(LS_PHONE_KEY);
+  } catch {
+    return null;
+  }
+})();
 
 type AuthApiResponse = {
   accessToken: string;
+  refreshToken?: string;
   expiresIn?: number;
   userPhone?: string;
 };
 
 type ApiErrorPayload = {
   message?: string;
+  detail?: string;
   code?: string;
-  details?: unknown;
 };
 
 function buildUrl(path: string): string {
@@ -28,13 +50,22 @@ function buildUrl(path: string): string {
 }
 
 async function requestJson<T>(path: string, options: RequestInit): Promise<T> {
-  const response = await fetch(buildUrl(path), {
+  const url = buildUrl(path);
+  logger.debug(`${options.method ?? "GET"} ${url}`);
+
+  const headers = {
+    "Content-Type": "application/json",
+    "X-API-Token": "IceOne",
+  };
+
+  console.log("Sending headers:", headers);  
+  console.log("Sending body:", options.body);  
+
+  const response = await fetch(url, {
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-    ...options,
+    headers,
+    method: options.method,
+    body: options.body,
   });
 
   let payload: ApiErrorPayload | T | null = null;
@@ -44,12 +75,16 @@ async function requestJson<T>(path: string, options: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
+    const errPayload = payload as ApiErrorPayload | null;
     const message =
-      (payload as ApiErrorPayload | null)?.message ??
+      errPayload?.message ??
+      errPayload?.detail ??
       `Request failed with status ${response.status}`;
+    logger.error(`${options.method ?? "GET"} ${path} → ${response.status}: ${message}`);
     throw new Error(message);
   }
 
+  logger.debug(`${options.method ?? "GET"} ${path} → ${response.status} OK`);
   return payload as T;
 }
 
@@ -58,30 +93,51 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
     throw new Error("Телефон и пароль обязательны");
   }
 
+  logger.info(`Login attempt: phone=${payload.phone.slice(0, 4)}***`);
+
+  const apiToken = "IceOne";
+
   const response = await requestJson<AuthApiResponse>("/auth/login", {
     method: "POST",
+    headers: {
+    "X-API-Token": apiToken,
+  },
     body: JSON.stringify(payload),
   });
 
   if (!response?.accessToken) {
+    logger.error("Login failed: no accessToken in response");
     throw new Error("Не удалось получить access token");
   }
 
-  setAccessToken(response.accessToken);
+  // Persist both tokens
+  setTokens(response.accessToken, response.refreshToken ?? null);
+
   currentUserPhone = response.userPhone ?? payload.phone;
+  try {
+    localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
+  } catch {
+    // localStorage not available
+  }
+
+  logger.info(`Login success: userPhone=${currentUserPhone}`);
 
   return {
     accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
     expiresIn: response.expiresIn,
     userPhone: currentUserPhone,
   };
 }
 
 export async function logout(): Promise<void> {
+  logger.info("Logout");
   try {
-    await requestJson<{ success: boolean }>("/auth/logout", {
+    await requestJson<{ ok: boolean }>("/auth/logout", {
       method: "POST",
     });
+  } catch (e) {
+    logger.warn("Logout request failed (continuing with local cleanup)", e);
   } finally {
     clearTokens();
     currentUserPhone = null;
@@ -90,13 +146,21 @@ export async function logout(): Promise<void> {
 
 export function saveAuth(data: AuthResponse): void {
   if (data.accessToken) {
-    setAccessToken(data.accessToken);
+    setTokens(data.accessToken, data.refreshToken ?? undefined);
   }
-  currentUserPhone = data.userPhone ?? null;
+  if (data.userPhone) {
+    currentUserPhone = data.userPhone;
+    try {
+      localStorage.setItem(LS_PHONE_KEY, currentUserPhone);
+    } catch {
+      // ignore
+    }
+  }
 }
 
+/** Returns the stored refresh token (from localStorage-persisted tokenStore) */
 export function getRefreshToken(): string | null {
-  return null;
+  return getRefreshTokenFromStore();
 }
 
 export function getAuthPhone(): string | null {
@@ -105,8 +169,13 @@ export function getAuthPhone(): string | null {
 
 export function isAuthenticated(): boolean {
   const token = getAccessToken();
-  if (!token) return false;
-  return isTokenValid(token, 10);
+  if (!token) {
+    logger.debug("isAuthenticated: no token");
+    return false;
+  }
+  const valid = isTokenValid(token, 10);
+  logger.debug(`isAuthenticated: ${valid}`);
+  return valid;
 }
 
 export function parseJwtPayload(token: string): Record<string, unknown> | null {
@@ -115,3 +184,4 @@ export function parseJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 export { getAccessToken };
+
