@@ -1,13 +1,11 @@
 {
   "name": "admin-panel",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
-  "homepage": "https://arturderr.github.io/admin-panel/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "deploy": "gh-pages -d dist",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -39,3 +37,4 @@
     "vite": "^7.3.1"
   }
 }
+
