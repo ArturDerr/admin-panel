@@ -94,7 +94,7 @@ export async function login(payload: LoginPayload): Promise<AuthResponse> {
 
   logger.info(`Login attempt: phone=${payload.phone.slice(0, 4)}***`);
 
-  const response = await requestJson<AuthApiResponse>("/auth/login", {
+  const response = await requestJson<AuthApiResponse>("/auth/login_admin", {
     method: "POST",
     body: JSON.stringify(payload),
   });
