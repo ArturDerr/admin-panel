@@ -217,7 +217,22 @@ export default function UsersPage() {
     try {
       setActionLoadingPhone(user.phone);
 
-      const updatedDetails = await toggleUserBan(user.phone);
+      // Определяем текущий статус бана
+      let currentBanStatus = false;
+
+      if (details?.phone === user.phone) {
+      // Если это текущий открытый пользователь - берем из details
+        currentBanStatus = details.isBanned;
+      } else {
+      // Если нет - загружаем детали
+        const userDetails = await fetchUserDetails(user.phone);
+        currentBanStatus = userDetails.isBanned;
+      }
+
+      const updatedDetails = await toggleUserBan(
+        user.phone,
+        currentBanStatus ? "unban" : "ban"
+      );
 
       if (details?.phone === user.phone) {
         setDetails(updatedDetails);
