@@ -216,15 +216,11 @@ export default function UsersPage() {
   async function handleToggleBan(user: UserRow) {
     try {
       setActionLoadingPhone(user.phone);
-
-      // Определяем текущий статус бана
       let currentBanStatus = false;
 
       if (details?.phone === user.phone) {
-      // Если это текущий открытый пользователь - берем из details
         currentBanStatus = details.isBanned;
       } else {
-      // Если нет - загружаем детали
         const userDetails = await fetchUserDetails(user.phone);
         currentBanStatus = userDetails.isBanned;
       }
@@ -379,11 +375,12 @@ export default function UsersPage() {
                     }))
                   }
                   placeholder="+7 700 000 00 00"
+                  rounded="none"
                   bg="#ffffff"
                   borderColor="#d9dde3"
                   _focus={{
-                    borderColor: "#7ed957",
-                    boxShadow: "0 0 0 1px #7ed957",
+                    borderColor: "#2f80ed",
+                    boxShadow: "0 0 0 1px #2f80ed",
                   }}
                 />
               </FormControl>
@@ -401,9 +398,10 @@ export default function UsersPage() {
                   placeholder="ФИО"
                   bg="#ffffff"
                   borderColor="#d9dde3"
+                  rounded="none"
                   _focus={{
-                    borderColor: "#7ed957",
-                    boxShadow: "0 0 0 1px #7ed957",
+                    borderColor: "#2f80ed",
+                    boxShadow: "0 0 0 1px #2f80ed",
                   }}
                 />
               </FormControl>
@@ -420,10 +418,11 @@ export default function UsersPage() {
                   }
                   placeholder="Улица, дом, квартира"
                   bg="#ffffff"
+                  rounded="none"
                   borderColor="#d9dde3"
                   _focus={{
-                    borderColor: "#7ed957",
-                    boxShadow: "0 0 0 1px #7ed957",
+                    borderColor: "#2f80ed",
+                    boxShadow: "0 0 0 1px #2f80ed",
                   }}
                 />
               </FormControl>
@@ -440,10 +439,11 @@ export default function UsersPage() {
                   }
                   placeholder="Широта, Долгота (например, 51.1694, 71.4491)"
                   bg="#ffffff"
+                  rounded="none"
                   borderColor="#d9dde3"
                   _focus={{
-                    borderColor: "#7ed957",
-                    boxShadow: "0 0 0 1px #7ed957",
+                    borderColor: "#2f80ed",
+                    boxShadow: "0 0 0 1px #2f80ed",
                   }}
                 />
               </FormControl>
@@ -452,12 +452,14 @@ export default function UsersPage() {
                 <Button
                   variant="outline"
                   colorScheme="gray"
+                  rounded="none"
                   onClick={closeCreateModal}
                 >
                   Отмена
                 </Button>
                 <Button
                   colorScheme="blue"
+                  rounded="none"
                   onClick={handleCreateUser}
                   isLoading={creating}
                 >
@@ -491,7 +493,7 @@ export default function UsersPage() {
           <ModalBody pb={6}>
             {loadingDetails ? (
               <HStack justify="center" py={10}>
-                <Spinner thickness="3px" speed="0.7s" color="#7ed957" />
+                <Spinner thickness="3px" speed="0.7s" color="#2f80ed" />
                 <Text color="#98a1ac">Загрузка деталей...</Text>
               </HStack>
             ) : !details ? (

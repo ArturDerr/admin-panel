@@ -619,7 +619,7 @@ export default function ProductsPage() {
                               src={src}
                               alt={`product-${idx + 1}`}
                               borderRadius="none"
-                              h="120px"
+                              h="420px"
                               objectFit="cover"
                               border="1px solid"
                               borderColor="#d9dde3"

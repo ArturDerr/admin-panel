@@ -20,7 +20,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import type { Coupon } from "../types";
-import { createCoupon, fetchCoupons } from "../api/dashboard";
+import {
+  createCoupon,
+  fetchCouponDetails,
+  fetchCoupons,
+} from "../api/dashboard";
 import SimpleSectionTable from "../components/SimpleSectionTable";
 
 export default function CouponsPage() {
@@ -35,6 +39,12 @@ export default function CouponsPage() {
     isActive: true,
   });
   const [isCreating, setIsCreating] = useState(false);
+  const detailsModal = useDisclosure();
+  const [selectedCouponId, setSelectedCouponId] = useState<
+    string | number | null
+  >(null);
+  const [details, setDetails] = useState<Record<string, unknown> | null>(null);
+  const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -123,6 +133,30 @@ export default function CouponsPage() {
     }
   }
 
+  async function openCouponDetails(coupon: Coupon) {
+    setSelectedCouponId(coupon.id);
+    setDetails(null);
+    detailsModal.onOpen();
+
+    try {
+      setIsDetailsLoading(true);
+      const response = await fetchCouponDetails(coupon.id);
+      setDetails(response);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Не удалось загрузить детали";
+      toast({
+        title: "Ошибка",
+        description: message,
+        status: "error",
+        duration: 2600,
+        isClosable: true,
+      });
+    } finally {
+      setIsDetailsLoading(false);
+    }
+  }
+
   return (
     <Box>
       <HStack justify="space-between" mb={4}>
@@ -162,6 +196,8 @@ export default function CouponsPage() {
           },
         ]}
         emptyText={isLoading ? "Загрузка..." : "Купоны не найдены"}
+        onOpenDetails={openCouponDetails}
+        detailsButtonText="Подробнее"
       />
 
       <Modal
@@ -227,6 +263,49 @@ export default function CouponsPage() {
                 </Button>
               </HStack>
             </VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      <Modal
+        isOpen={detailsModal.isOpen}
+        onClose={detailsModal.onClose}
+        isCentered
+        size="lg"
+      >
+        <ModalOverlay bg="blackAlpha.300" />
+        <ModalContent
+          bg="#ffffff"
+          border="1px solid"
+          borderColor="#d9dde3"
+          color="#2b2f36"
+          borderRadius="none"
+        >
+          <ModalHeader>
+            Детали купона {selectedCouponId ? `— ${selectedCouponId}` : ""}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {isDetailsLoading ? (
+              <HStack justify="center" py={10}>
+                <Spinner thickness="3px" speed="0.7s" color="#2f80ed" />
+                <Text color="#98a1ac">Загрузка деталей...</Text>
+              </HStack>
+            ) : details ? (
+              <Box
+                as="pre"
+                fontSize="sm"
+                whiteSpace="pre-wrap"
+                bg="#f6f7f9"
+                border="1px solid"
+                borderColor="#d9dde3"
+                p={3}
+              >
+                {JSON.stringify(details, null, 2)}
+              </Box>
+            ) : (
+              <Text color="#98a1ac">Данные недоступны</Text>
+            )}
           </ModalBody>
         </ModalContent>
       </Modal>

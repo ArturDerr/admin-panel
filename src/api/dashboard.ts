@@ -222,3 +222,41 @@ export async function createCoupon(
 ): Promise<Coupon> {
   return apiClient.post<Coupon>("/admin/coupons", payload);
 }
+
+type ModerationDecisionRequest = {
+  comment: string;
+};
+
+export async function fetchModerationItemDetails(
+  itemId: string | number,
+): Promise<Record<string, unknown>> {
+  return apiClient.get<Record<string, unknown>>(
+    `/admin/product-moderation/${encodeURIComponent(String(itemId))}`,
+  );
+}
+
+export async function approveModerationProduct(
+  productId: string | number,
+): Promise<Record<string, unknown>> {
+  return apiClient.put<Record<string, unknown>>(
+    `/admin/product-moderation/${encodeURIComponent(String(productId))}/approve`,
+  );
+}
+
+export async function rejectModerationProduct(
+  productId: string | number,
+  payload: ModerationDecisionRequest,
+): Promise<Record<string, unknown>> {
+  return apiClient.put<Record<string, unknown>>(
+    `/admin/product-moderation/${encodeURIComponent(String(productId))}/reject`,
+    payload,
+  );
+}
+
+export async function fetchCouponDetails(
+  couponId: string | number,
+): Promise<Record<string, unknown>> {
+  return apiClient.get<Record<string, unknown>>(
+    `/admin/coupons/${encodeURIComponent(String(couponId))}`,
+  );
+}
