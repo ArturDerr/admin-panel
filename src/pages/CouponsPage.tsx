@@ -157,6 +157,14 @@ export default function CouponsPage() {
     }
   }
 
+  const renderDetailValue = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (typeof value === "boolean") return value ? "Да" : "Нет";
+    if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
+
   return (
     <Box>
       <HStack justify="space-between" mb={4}>
@@ -292,17 +300,73 @@ export default function CouponsPage() {
                 <Text color="#98a1ac">Загрузка деталей...</Text>
               </HStack>
             ) : details ? (
-              <Box
-                as="pre"
-                fontSize="sm"
-                whiteSpace="pre-wrap"
-                bg="#f6f7f9"
-                border="1px solid"
-                borderColor="#d9dde3"
-                p={3}
-              >
-                {JSON.stringify(details, null, 2)}
-              </Box>
+              <VStack align="stretch" spacing={4}>
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Основное
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">ID</Text>
+                      <Text>{renderDetailValue(details.id)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Код</Text>
+                      <Text>{renderDetailValue(details.code)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Скидка %</Text>
+                      <Text>{renderDetailValue(details.discountPercent)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Активен</Text>
+                      <Text>{renderDetailValue(details.isActive)}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Ограничения
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Цена от</Text>
+                      <Text>{renderDetailValue(details.priceFrom)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Цена до</Text>
+                      <Text>{renderDetailValue(details.priceUpTo)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Макс. скидка</Text>
+                      <Text>{renderDetailValue(details.discountUpTo)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Категория</Text>
+                      <Text>
+                        {renderDetailValue(details.categoryOfProduct)}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Купон для</Text>
+                      <Text>{renderDetailValue(details.couponForUser)}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              </VStack>
             ) : (
               <Text color="#98a1ac">Данные недоступны</Text>
             )}

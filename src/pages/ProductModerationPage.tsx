@@ -214,6 +214,14 @@ export default function ProductModerationPage() {
     }
   }
 
+  const renderDetailValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === "") return "—";
+    if (typeof value === "boolean") return value ? "Да" : "Нет";
+    if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
+
   return (
     <Box>
       <HStack mb={4} spacing={3}>
@@ -295,17 +303,132 @@ export default function ProductModerationPage() {
                 <Text color="#98a1ac">Загрузка деталей...</Text>
               </HStack>
             ) : details ? (
-              <Box
-                as="pre"
-                fontSize="sm"
-                whiteSpace="pre-wrap"
-                bg="#f6f7f9"
-                border="1px solid"
-                borderColor="#d9dde3"
-                p={3}
-              >
-                {JSON.stringify(details, null, 2)}
-              </Box>
+              <VStack align="stretch" spacing={4}>
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Основное
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">ID</Text>
+                      <Text>{renderDetailValue(details.id)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Product ID</Text>
+                      <Text>{renderDetailValue(details.productId)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Название</Text>
+                      <Text>{renderDetailValue(details.title)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Категория</Text>
+                      <Text>{renderDetailValue(details.category)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Бренд</Text>
+                      <Text>{renderDetailValue(details.brand)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Статус</Text>
+                      <Badge
+                        colorScheme={statusColor(
+                          (details.status as ProductModerationItem["status"]) ?? "pending",
+                        )}
+                      >
+                        {renderDetailValue(details.status)}
+                      </Badge>
+                    </HStack>
+                  </VStack>
+                </Box>
+
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Цены
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Цена за час</Text>
+                      <Text>{renderDetailValue(details.price_per_hour)}</Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Цена за день</Text>
+                      <Text>{renderDetailValue(details.price_per_day)}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Владелец
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Телефон</Text>
+                      <Text>{renderDetailValue(details.ownerPhone)}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+                <Box
+                  border="1px solid"
+                  borderColor="#d9dde3"
+                  borderRadius="none"
+                  p={4}
+                  bg="#ffffff"
+                >
+                  <Text fontWeight="700" mb={3}>
+                    Модерация
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Отправлено</Text>
+                      <Text>
+                        {details.submittedAt
+                          ? formatDate(details.submittedAt as string)
+                          : "—"}
+                      </Text>
+                    </HStack>
+                    <HStack justify="space-between">
+                      <Text color="#98a1ac">Комментарий</Text>
+                      <Text>{renderDetailValue(details.moderation_comment)}</Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+
+                {!!details.description && (
+                  <Box
+                    border="1px solid"
+                    borderColor="#d9dde3"
+                    borderRadius="none"
+                    p={4}
+                    bg="#ffffff"
+                  >
+                    <Text fontWeight="700" mb={3}>
+                      Описание
+                    </Text>
+                    <Text fontSize="sm" color="#2b2f36" whiteSpace="pre-wrap">
+                      {String(details.description)}
+                    </Text>
+                  </Box>
+                )}
+              </VStack>
             ) : (
               <Text color="#98a1ac">Данные недоступны</Text>
             )}
